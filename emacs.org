@@ -1,5 +1,5 @@
 #+TITLE: Emacs Literate Configuration
-#+AUTHOR: Your Name Here
+#+AUTHOR: Jacob H.
 #+PROPERTY: header-args :tangle yes
 
 * Configuration
@@ -173,11 +173,11 @@ Install, automatically load, and enable evil. It's like vim, but better!
   (evil-mode 1))
 #+END_SRC
 
-*** Ivy
+*** Helm
 Generic completion frontend that's just awesome! Let's install and enable it.
 
 #+BEGIN_SRC emacs-lisp
-(use-package ivy
+(use-package helm
   :demand t)
 #+END_SRC
 
@@ -244,6 +244,12 @@ package that automatically generates an up to date table of contents for us.
   :init (add-hook 'org-mode-hook #'toc-org-enable))
 #+END_SRC
 
+*** Which-key
+A way of setting up spacemacs keybinding in JMacs.
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+:demand t
+)
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
 
