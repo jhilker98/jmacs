@@ -1,0 +1,584 @@
+* *Introduction to JMACS*
+Welcome to JMacs! This is a my personal configuration of emacs, for
+solo RPG campaigns like [[https://www.ironswornrpg.com/][Ironsworn]], writing (both prose and code), and
+for general use. I have organized this file into different sections,
+such as the functions I use, the UI settings, etc.
+* Package Initialization and Bootstrapping
+** Package Initialization and Extra Sources
+I am adding extra sources to my package archives here.
+
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(setq package-enable-at-startup nil)
+(setq package-archives '(("org"   . "http://orgmode.org/elpa/")
+                         ("gnu"   . "http://elpa.gnu.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")))
+(package-initialize)
+#+END_SRC 
+** Bootstrapping
+Here is where I am using the bootstrapping with use-package.
+
+#+BEGIN_SRC emacs-lisp
+;; Bootstrap `use-package`
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+#+END_SRC
+* Packages
+Here is where I install all the packages I use in this configuration.
+
+** General Packages
+These are all packages for general use.
+**** EVIL and EVIL-ORG
+I am installing evil and evil-collection for vim keybindings in emacs.
+#+BEGIN_SRC emacs-lisp
+(use-package undo-tree
+:ensure t)
+
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init))
+#+END_SRC
+
+**** Imenu-List
+Imenu-list allows me to get an overview of my code or outline for an
+AAR/novel. Here I enable it and install it.
+
+#+BEGIN_SRC emacs-lisp
+(use-package imenu-list
+:ensure t
+:config
+(setq-default imenu-list-position "left"))
+;(imenu-list-minor-mode t)
+#+END_SRC
+
+**** Which-Key
+Which-key enables me to see what keys I can use.
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+:ensure t
+:config
+(which-key-mode 1))
+#+END_SRC
+
+**** Magit
+Magit enables me to use git while in emacs. I enable it and install it here.
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+:ensure t)
+#+END_SRC
+
+**** All-The-Icons
+Here I enable all-the-icons.
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons
+:ensure t)
+#+END_SRC
+
+**** Projectile
+Projectile is a way of using projects in emacs.
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+:ensure t)
+#+END_SRC
+
+**** Dashboard
+Dashboard lets me see recent files as well as projects.
+#+BEGIN_SRC emacs-lisp
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+#+END_SRC
+**** General.el
+
+#+BEGIN_SRC emacs-lisp
+(use-package general
+:ensure t)
+#+END_SRC
+
+**** Unfill
+For toggling fill and unfill.
+
+#+BEGIN_SRC emacs-lisp
+(use-package unfill
+:ensure t)
+#+END_SRC
+**** YASnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+:ensure t)
+(use-package yasnippet-snippets
+:ensure t)
+#+END_SRC
+
+**** Restart Emacs
+     #+BEGIN_SRC emacs-lisp
+     (use-package restart-emacs
+     :ensure t)
+     #+END_SRC
+** UI Packages
+*** Doom Themes
+Here is a package for Doom-Themes.
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes
+:ensure t)
+#+END_SRC
+*** Solarized
+Here is a package for using solarized.
+#+BEGIN_SRC emacs-lisp
+(use-package color-theme-solarized
+:ensure t)
+(use-package solarized-theme
+:ensure t)
+#+END_SRC
+
+*** Doom Modeline
+   #+BEGIN_SRC emacs-lisp 
+   (use-package doom-modeline
+   :ensure t)
+   #+END_SRC
+** Worldbuilding Packages
+*** Wordgen Mode
+** Writer Packages
+*** WC-Mode 
+WC-Mode is a way I can get the word-count of a particular file. Here I
+enable it and set it to run in markdown-mode and org-mode.
+#+BEGIN_SRC emacs-lisp
+(use-package wc-mode
+:ensure t
+:config
+(setq-default wc-modeline-format "%tw"))
+#+END_SRC
+
+*** Writegood-Mode
+#+BEGIN_SRC emacs-lisp
+(use-package writegood-mode
+:ensure t)
+#+END_SRC
+*** Writeroom-Mode
+Writeroom-Mode is a minor mode for distraction-free writing.
+#+BEGIN_SRC emacs-lisp
+(use-package writeroom-mode
+:ensure t)
+#+END_SRC
+*** Wordsmith Mode
+    #+BEGIN_SRC emacs-lisp
+    (use-package wordsmith-mode
+    :ensure t)
+    #+END_SRC
+** RPG Packages
+*** Decide-Mode
+This is useful for rolling dice.
+#+BEGIN_SRC emacs-lisp
+(use-package decide
+:ensure t)
+#+END_SRC
+** Completion Packages
+*** Ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+:ensure t
+:config
+(ivy-mode 1))
+#+END_SRC
+
+*** Counsel
+Counsel allows us to utilize ivy by replacing many built-in and common
+functions with richer versions. Let’s install it!
+
+#+BEGIN_SRC emacs-lisp
+;(use-package counsel-projectile)
+(use-package counsel
+:ensure t)
+#+END_SRC
+
+*** Swiper
+#+BEGIN_SRC emacs-lisp
+(use-package swiper
+  :commands (swiper swiper-all))
+#+END_SRC
+*** Auto-Complete
+#+BEGIN_SRC emacs-lisp
+(use-package auto-complete
+:ensure t)
+#+END_SRC
+** Programming Packages
+*** Python Programming
+  #+BEGIN_SRC emacs-lisp
+  (use-package elpy
+  :ensure t)
+  #+END_SRC
+*** BBCode Formatting
+    #+BEGIN_SRC emacs-lisp
+    (use-package bbcode-mode
+    :ensure t)
+    #+END_SRC
+** Org Packages
+*** Org
+I want to keep org-mode as up to date as I can.
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :ensure org-plus-contrib
+  :pin org
+  :defer t)
+
+;; Ensure ELPA org is prioritized above built-in org.
+(require 'cl)
+(setq load-path (remove-if (lambda (x) (string-match-p "org$" x)) load-path))
+#+END_SRC
+
+*** Org Bullets
+This allows for better org-mode bullets.
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets
+:after org
+:ensure t)
+#+END_SRC
+*** Org-TOC
+Allows for a TOC to be generated in an org file.
+#+BEGIN_SRC emacs-lisp
+(use-package toc-org
+  :after org
+  :init (add-hook 'org-mode-hook #'toc-org-enable))
+#+END_SRC
+*** Org-Super-Agenda
+  #+BEGIN_SRC emacs-lisp 
+  (use-package org-super-agenda
+  :ensure t)
+  #+END_SRC
+  
+* Specific Functions
+** Find Config File
+This file lets me edit my configuration file.
+
+#+BEGIN_SRC emacs-lisp
+(defun edit-emacs-config ()
+  (interactive)
+  (find-file "~/.emacs.d/jmacs.org"))
+#+END_SRC
+
+** Use Y/N or y/n for yes/no
+Here is a way I can use "y" or "n" to answer yes or no.
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+** Word-Count
+#+BEGIN_SRC emacs-lisp
+(defun wordCount (&optional begin end)
+  "count words between BEGIN and END (region); if no region defined, count words in buffer"
+  (interactive "r")
+  (let ((b (if mark-active begin (point-min)))
+      (e (if mark-active end (point-max))))
+    (message "%s words" (how-many "\\w+" b e))))
+#+END_SRC
+** Right-Align Modebar
+#+BEGIN_SRC emacs-lisp
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+#+END_SRC
+* Hooks and General (Non-UI) Config
+** File Types and Modes
+*** File Types
+**** Org Mode File Types
+I want to load novel (*.nvl), novel characters (*.chrs), character
+sheet (*.chr), campaign (*.cmp), and AAR (*.aar) files as org-mode
+files.
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.nvl\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.chrs\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.cmp\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.chr\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.aar\\'" . org-mode))
+#+END_SRC
+
+*** Modes
+**** Org-Bullet and Super Agenda Mode
+#+BEGIN_SRC emacs-lisp
+(setq-default org-bullets-mode 1)
+(add-hook 'org-mode-hook 'org-bullets-mode)
+(add-hook 'org-mode-hook 'org-super-agenda-mode)
+(add-hook 'org-mode-hook 'flyspell-mode)
+#+END_SRC
+**** WC-Mode, Writer-Room Mode, and Decide Mode
+I want to use wc-mode and decide-mode for when I am in org mode.
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-mode-hook 'wc-mode)
+(add-hook 'org-mode-hook 'decide-mode)
+#+END_SRC
+**** Global Auto-Complete and Snippet Mode
+Here I always want to use auto-complete mode, as well as in the current buffer.
+#+BEGIN_SRC emacs-lisp
+(global-auto-complete-mode 1)
+(setq-default auto-complete-mode 1)
+(setq-default yas-minor-mode 1)
+#+END_SRC
+
+**** Doom Modeline Mode
+I always want to use doom modeline.
+#+BEGIN_SRC emacs-lisp
+ (setq-default doom-modeline-mode 1)
+#+END_SRC
+
+**** Rich Minority Mode
+#+BEGIN_SRC emacs-lisp 
+;(rich-minority-mode 1)
+;(ivy-rich-mode 1)
+#+END_SRC
+
+** ELPY for python and BBC-Mode for bbc
+** Org-Super-Agenda Config
+
+* Keybindings
+Here is a list of all keybindings in JMacs.
+** General Keybindings
+
+Here is a list of general purpose keybindings using General.el.
+#+BEGIN_SRC emacs-lisp
+(general-define-key
+   :states '(normal visual insert emacs)
+   :prefix "SPC"
+   :non-normal-prefix "C-SPC"
+
+   ;; Specific Keybinding Replacements
+    "SPC" (general-simulate-key "M-x")
+    "c"   (general-simulate-key "C-c")
+    "h"   (general-simulate-key "C-h")
+    "u"   (general-simulate-key "C-u")
+    "x"   (general-simulate-key "C-x")
+    
+   ;; quit commands  
+   "q" '(:ignore t :which-key "quit emacs")
+   "qq"  'kill-emacs
+   "qz"  'delete-frame
+   "qr"  'restart-emacs
+   ;; Buffer commands 
+    "b"   '(:ignore t :which-key "buffers")
+    "bb"  'mode-line-other-buffer
+    "bd"  'kill-this-buffer
+    "bn"  'next-buffer
+    "bp"  'previous-buffer
+    "bq"  'kill-buffer-and-window
+    "bR"  'rename-file-and-buffer
+    "br"  'revert-buffer
+    "bw"  'wordCount
+;; Window commands
+   "w"  '(:ignore t :which-key "Windows")
+   "w-" 'split-window-right
+   "w|" 'split-window-below
+   "wn" 'other-window
+   "wd"  'delete-window
+   "wD"  'delete-other-windows
+   "wm" 'maximize-window
+
+;; Files
+   "f" '(:ignore t :which-key "Files")
+   "fe" '(:ignore t :which-key "Edit file")
+   "feD" 'edit-emacs-config
+   "ff"  'counsel-find-file
+   "fs"  'save-buffer
+;; Packages
+   "p" '(:ignore t :which-key "Packages")
+   "pl" 'package-list-packages
+   "pr" 'package-refresh-contents
+   "pi" 'package-install
+   "pI" 'package-initialize
+   "pd" 'package-delete
+
+;; Org-Mode
+"o" '(:ignore t :which-key "Org Menu")
+"os" 'org-save-all-org-buffers
+"oa" 'org-agenda 
+"ov" 'org-agenda-show
+
+;; Magit
+   "g" '(:ignore t :which-key "Magit")
+   "gs" 'magit-status
+   "gS" 'magit-stage-file
+   "gc" 'magit-commit
+   "gp" 'magit-push
+   "gP" 'magit-push-to-remote
+   "gd" 'magit-diff 
+
+;; IMenu-List toggle
+   "m" '(:ignore t :which-key "Imenu-list") 
+   "mt" 'imenu-list-smart-toggle
+   "me" 'imenu-list-goto-entry
+;; Writer Commands
+   "r"  '(:ignore t :which-key "Writeroom Mode")
+   "rt" 'writeroom-mode
+   "rm" 'writeroom-toggle-mode-line
+   "rw" 'wordsmith-mode
+;; Toggles
+   "t" '(:ignore t :which-key "Toggle")
+   "tw" 'toggle-word-wrap
+   "tf" 'unfill-toggle
+   "tn" 'display-line-numbers-mode
+
+;; General Mode Toggles
+   "M" '(:ignore t :which-key "Mode Toggles")
+   "Ma" 'auto-complete-mode
+   "Mi" 'org-indent-mode
+   "Mw" 'wc-mode
+   "Md" 'decide-mode
+   "My" 'yas-minor-mode 
+   "MW" 'writegood-mode
+   "Mf" 'flyspell-mode
+
+;; YaSnippet Shortcuts
+"y" '(:ignore t :which-key "Yasnippet")
+"yn" 'yas-new-snippet
+"yi" 'yas-insert-snippet
+"yy" 'yas-minor-mode
+
+;; Spell-check
+"s" '(:ignore t :which-key "Spell Check")
+"sn" 'flyspell-goto-next-error
+"sb" 'flyspell-buffer
+"sc" 'flyspell-correct-word-before-point  
+"st" 'ispell-minor-mode
+
+
+)
+
+#+END_SRC
+
+** TAB for Evil-Org 
+This keybinding lets you use the Tab key to toggle folding headers,
+like in regular org mode.
+
+#+BEGIN_SRC emacs-lisp
+  (general-define-key
+  :states 'normal
+  "TAB" 'evil-toggle-fold)
+#+END_SRC 
+
+* UI
+** Minimalistic UI
+Here is where I make my UI as minimalistic as possible. I am disabling
+my toolbars, tooltip-mode, menu-bar, and scroll-bar modes here.
+
+#+BEGIN_SRC emacs-lisp
+(scroll-bar-mode -1)
+(tool-bar-mode   -1)
+(tooltip-mode    -1)
+(menu-bar-mode   -1)
+#+END_SRC
+
+** Org UI
+Here is where I disable the leading headers in org-bullets-mode.
+#+BEGIN_SRC emacs-lisp 
+(setq-default org-hide-leading-stars t)
+;(setq-default org-ellipsis "⤵")
+(setq org-src-fontify-natively t)  
+#+END_SRC
+
+** Fonts and Themes
+*** Fonts
+I often switch between DejaVu Sans Pro, Fira Code, Monaco, and Source
+Code Pro for my fonts. Here I have created a list of fonts and I can
+switch between it by commenting out the other fonts. 
+
+#+TODO: figure out font switching, and if using regular modeline enable the solarized section below.
+
+
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default t :font "Inconsolata-12")
+; (setq solarized-use-variable-pitch nil)
+
+ ;   (setq solarized-scale-org-headlines nil)
+
+  ;  (setq solarized-height-minus-1 1)
+   ; (setq solarized-height-plus-1 1)
+    ;(setq solarized-height-plus-2 1)
+    ;(setq solarized-height-plus-3 1)
+    ;(setq solarized-height-plus-4 1) 
+
+#+END_SRC
+
+*** Theme
+I am doing something extremely similar to the function above, but with
+themes. By default I want to use doom-gruvbox with the font colors of
+doom-material.
+
+#+BEGIN_SRC emacs-lisp
+;(load-theme 'solarized t)
+(load-theme 'doom-solarized-dark t)
+;(load-theme 'doom-solarized-light t)
+;(load-theme 'doom-one t)
+;(load-theme 'doom-gruvbox t)
+;(load-theme 'doom-material t)
+;(load-theme 'doom-nord t)
+;(setq solarized-termcolors 256)
+;(load-theme 'solarized-dark t)
+#+END_SRC 
+
+* Headerlines and Modelines
+Here is my modeline configuration. I need to add to it to figure out
+what the best configuration is, but I think two different
+configurations would be best - one for writing and one for
+programming.
+** Headerline
+#+BEGIN_SRC emacs-lisp
+(setq-default header-line-format
+'(:eval (propertize (format-time-string " %d %b  %I:%M %p ")
+                                   'face 'font-lock-builtin-face))
+)
+#+END_SRC
+** Prose Stock Config
+#+BEGIN_SRC emacs-lisp
+;(setq rm-blacklist
+ ;     (format "^ \\(%s\\)$"
+  ;            (mapconcat #'identity
+   ;                      '("Fly.*" "Projectile.*" "PgLn" "Undo-Tree" "yas" "WK" "Ivy" "Decide" "$")
+    ;                     "\\|")))
+;(defun prose-setup ()
+;(setq mode-line-format
+;'((:eval (simple-mode-line-render
+                ;; left
+;               (format-mode-line "%b [%*]"))))
+                ;; right
+ ;             (format-mode-line "%m  %M" )))
+ ; (add-hook 'org-mode-hook 'prose-setup)
+#+END_SRC
+** Prose Doom Config
+   #+BEGIN_SRC emacs-lisp
+ ;  (use-package all-the-icons
+  ; :ensure t)
+   (defvar doom-modeline-icon (display-graphic-p) )
+   (setq doom-modeline-enable-word-count t)
+   (setq doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+   (setq doom-modeline-icon t) 
+   (doom-modeline-def-modeline 'prose-modeline
+   '(bar word-count buffer-info-simple)
+   '(major-mode battery))
+
+   (defun set-prose-modeline ()
+     (doom-modeline-set-modeline 'prose-modeline))
+   (add-hook 'org-mode-hook 'set-prose-modeline)
+   #+END_SRC
+
+** Prose Smart-Mode-Line Config
+
+   #+BEGIN_SRC emacs-lisp
+   ;(setq-default sml/no-confirm-load-theme t)
+   ;(sml/setup)
+   ;(sml/apply-theme 'respectful)
+  #+END_SRC
