@@ -225,20 +225,8 @@ functions with richer versions. Let’s install it!
     (use-package bbcode-mode
     :ensure t)
     #+END_SRC
+
 ** Org Packages
-*** Org
-I want to keep org-mode as up to date as I can.
-#+BEGIN_SRC emacs-lisp
-(use-package org
-  :ensure org-plus-contrib
-  :pin org
-  :defer t)
-
-;; Ensure ELPA org is prioritized above built-in org.
-(require 'cl)
-(setq load-path (remove-if (lambda (x) (string-match-p "org$" x)) load-path))
-#+END_SRC
-
 *** Org Bullets
 This allows for better org-mode bullets.
 #+BEGIN_SRC emacs-lisp
@@ -258,7 +246,7 @@ Allows for a TOC to be generated in an org file.
   (use-package org-super-agenda
   :ensure t)
   #+END_SRC
-  
+
 * Specific Functions
 ** Find Config File
 This file lets me edit my configuration file.
@@ -292,20 +280,27 @@ Here is a way I can use "y" or "n" to answer yes or no.
     (format (format " %%s %%%ds " available-width) left right)))
 #+END_SRC
 * Hooks and General (Non-UI) Config
+** Dashboard
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-screen t
+      initial-buffer-choice  nil)
+(setq-default initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+#+END_SRC
 ** File Types and Modes
 *** File Types
 **** Org Mode File Types
-I want to load novel (*.nvl), novel characters (*.chrs), character
-sheet (*.chr), campaign (*.cmp), and AAR (*.aar) files as org-mode
-files.
+I want to load novel (.nvl), novel characters (.chrs), character sheet
+(.chr), campaign (.cmp), AAR (.aar) files, novel outline (.otl), and
+note files (.nts) as org-mode files.
 
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.nvl\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.chrs\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.cmp\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.chr\\'" . org-mode))
   (add-to-list 'auto-mode-alist '("\\.aar\\'" . org-mode))
+  (add-to-list 'auto-mode-alist '("\\.otl\\'" . org-mode))
 #+END_SRC
 
 *** Modes
@@ -326,9 +321,9 @@ I want to use wc-mode and decide-mode for when I am in org mode.
 **** Global Auto-Complete and Snippet Mode
 Here I always want to use auto-complete mode, as well as in the current buffer.
 #+BEGIN_SRC emacs-lisp
-(global-auto-complete-mode 1)
-(setq-default auto-complete-mode 1)
-(setq-default yas-minor-mode 1)
+(global-auto-complete-mode t)
+(setq-default auto-complete-mode t)
+(setq-default yas-minor-mode t)
 #+END_SRC
 
 **** Doom Modeline Mode
@@ -345,7 +340,11 @@ I always want to use doom modeline.
 
 ** ELPY for python and BBC-Mode for bbc
 ** Org-Super-Agenda Config
-
+#+BEGIN_SRC emacs-lisp
+(let ((org-super-agenda-groups
+       '((:auto-category t))))
+  (org-agenda-list))
+#+END_SRC
 * Keybindings
 Here is a list of all keybindings in JMacs.
 ** General Keybindings
@@ -392,6 +391,10 @@ Here is a list of general purpose keybindings using General.el.
    "f" '(:ignore t :which-key "Files")
    "fe" '(:ignore t :which-key "Edit file")
    "feD" 'edit-emacs-config
+   "fE" '(:ignore t :which-key "Eval file")
+   "fEr" 'eval-region
+   "fEb" 'eval-buffer
+   "fEd" 'eval-defun
    "ff"  'counsel-find-file
    "fs"  'save-buffer
 ;; Packages
@@ -405,9 +408,9 @@ Here is a list of general purpose keybindings using General.el.
 ;; Org-Mode
 "o" '(:ignore t :which-key "Org Menu")
 "os" 'org-save-all-org-buffers
-"oa" 'org-agenda 
 "ov" 'org-agenda-show
-
+"of" '(:ignore t :which-key "Org Files")
+"off" 'org-agenda-file-to-front
 ;; Magit
    "g" '(:ignore t :which-key "Magit")
    "gs" 'magit-status
@@ -468,7 +471,7 @@ like in regular org mode.
   (general-define-key
   :states 'normal
   "TAB" 'evil-toggle-fold)
-#+END_SRC 
+#+END_SRC
 
 * UI
 ** Minimalistic UI
@@ -528,7 +531,7 @@ doom-material.
 ;(load-theme 'doom-nord t)
 ;(setq solarized-termcolors 256)
 ;(load-theme 'solarized-dark t)
-#+END_SRC 
+#+END_SRC
 
 * Headerlines and Modelines
 Here is my modeline configuration. I need to add to it to figure out
