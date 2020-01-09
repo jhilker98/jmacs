@@ -14,7 +14,7 @@ I am adding extra sources to my package archives here.
                          ("gnu"   . "http://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
 (package-initialize)
-#+END_SRC 
+#+END_SRC
 ** Bootstrapping
 Here is where I am using the bootstrapping with use-package.
 
