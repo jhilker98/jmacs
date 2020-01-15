@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name:cbox 
+# key:cbox 
+# --
+- [ ] $0

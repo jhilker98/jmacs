@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name:done 
+# key: done
+# --
+DONE: $0
