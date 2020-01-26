@@ -71,14 +71,13 @@
 (use-package restart-emacs
 :ensure t)
 
-(use-package slack
+(use-package csv-mode
 :ensure t)
+(add-to-list 'auto-mode-alist '("\\.csv\\'" . csv-mode))
 
 (use-package doom-themes
 :ensure t)
 
-(use-package color-theme-solarized
-:ensure t)
 (use-package solarized-theme
 :ensure t)
 
@@ -117,7 +116,7 @@
 (use-package company
 :ensure t
 :config
-(company-mode t))
+(add-hook 'after-init-hook 'global-company-mode))
 
 (use-package elpy
 :ensure t)
@@ -171,6 +170,9 @@
      '((:auto-category t))))
 (org-agenda-list)))
 
+(use-package ox-mediawiki
+:ensure t)
+
 (defun edit-emacs-config ()
   (interactive)
   (find-file "~/.emacs.d/jmacs.org"))
@@ -184,18 +186,26 @@
       (e (if mark-active end (point-max))))
     (message "%s words" (how-many "\\w+" b e))))
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
 (defun simple-mode-line-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
  aligned respectively."
   (let* ((available-width (- (window-width) (length left) 2)))
     (format (format " %%s %%%ds " available-width) left right)))
 
-(setq org-image-actual-width (/ (display-pixel-width) 3))
+(defun simple-header-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
 
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
+(setq org-image-actual-width (/ (display-pixel-width) 4))
+
+(setq-default indent-tabs-mode nil)
 
 (setq-default initial-major-mode 'org-mode)
 
@@ -213,6 +223,7 @@
 (add-hook 'org-mode-hook 'org-bullets-mode)
 (add-hook 'org-mode-hook 'org-super-agenda-mode)
 (add-hook 'org-mode-hook 'flyspell-mode)
+(add-hook 'org-mode-hook 'toc-org-mode)
 (setq-default org-list-allow-alphabetical t)
 
 (add-hook 'org-mode-hook 'wc-mode)
@@ -221,10 +232,7 @@
 (setq-default global-company-mode 1)
 (setq-default yas-minor-mode 1)
 
-(setq-default doom-modeline-mode 1)
-
-;(rich-minority-mode 1)
-;(ivy-rich-mode 1)
+(setq-default doom-modeline-mode t)
 
 (display-battery-mode t)
 
@@ -232,6 +240,12 @@
 
 (add-hook 'python-mode 'elpy-mode)
 (add-to-list 'auto-mode-alist '("\\.bbc\\'" . bbcode-mode))
+
+(defun org-latex-yas ()
+  "Activate org and LaTeX yas expansion in org-mode buffers."
+  (yas-activate-extra-mode 'latex-mode))
+
+(add-hook 'org-mode-hook #'org-latex-yas)
 
 (general-define-key
    :states '(normal visual insert emacs)
@@ -263,8 +277,8 @@
     "bw"  'wordCount
 ;; Window commands
    "w"  '(:ignore t :which-key "Windows")
-   "w-" 'split-window-right
-   "w|" 'split-window-below
+   "wh" 'split-window-right
+   "wv" 'split-window-below
    "wn" 'other-window
    "wd"  'delete-window
    "wD"  'delete-other-windows
@@ -308,6 +322,11 @@
    "ot" '(:ignore t :which-key "toggle")
    "oti" 'org-toggle-inline-images
    "otc" 'org-toggle-checkbox
+   "oT" 'org-todo
+   "oi" '(:ignore t :which-key "insert")
+   "oit" 'toc-org-insert-toc
+   "oiT" 'org-time-stamp
+	 "oe" 'org-export-dispatch
    ;; Magit
    "g" '(:ignore t :which-key "Magit")
    "gs" 'magit-status
@@ -340,9 +359,11 @@
    "Md" 'decide-mode
    "My" 'yas-minor-mode 
    "MW" 'writegood-mode
-   "Mf" 'flyspell-mode
+   "Ms" 'flyspell-mode
    "MF" 'flycheck-mode
    "Mc" 'company-mode
+   "Md" 'decide-mode
+   "Mt" 'toc-org-mode
 ;; YaSnippet Shortcuts
 "y" '(:ignore t :which-key "Yasnippet")
 "yn" 'yas-new-snippet
@@ -353,11 +374,7 @@
 "s" '(:ignore t :which-key "Spell Check")
 "sn" 'flyspell-goto-next-error
 "sb" 'flyspell-buffer
-"sc" 'flyspell-correct-word-before-point  
-"st" 'ispell-minor-mode
-
-;; Slack
-"S" '(:ignore t :which-key "Slack")
+"sc" 'flyspell-correct-word-before-point
 
 ;; Lorem Ipsum
 "l" '(:ignore t :which-key "Lorem Ipsum")
@@ -383,18 +400,21 @@
 (menu-bar-mode   -1)
 
 (setq-default org-hide-leading-stars t)
-;(setq-default org-ellipsis "⤵")
+(setq-default org-ellipsis "⤵")
 (setq org-src-fontify-natively t)  
 (setq org-hide-emphasis-markers t)
-
-
 (font-lock-add-keywords 'org-mode
                         '(("^ +\\([-*]\\) "
                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-(setq-default org-bullets-bullet-list 
-'("⚫" "○"))
 
-(set-face-attribute 'default t :font "Source Code Pro-12")
+
+(setq-default org-bullets-bullet-list 
+'("⚫" "○")) 
+
+(setq-default tab-width 4)
+(setq-default org-list-indent-offset 4)
+
+(set-face-attribute 'default t :font "DejaVu Sans Mono-12")
 ; (setq solarized-use-variable-pitch nil)
 
  ;   (setq solarized-scale-org-headlines nil)
@@ -406,29 +426,30 @@
     ;(setq solarized-height-plus-4 1)
 
 ;(load-theme 'solarized t)
-(load-theme 'doom-solarized-dark t)
-;(load-theme 'doom-solarized-light t)
-;(load-theme 'doom-one t)
-;(load-theme 'doom-gruvbox t)
-;(load-theme 'doom-material t)
-;(load-theme 'doom-nord t)
-;(setq solarized-termcolors 256)
+;  (load-theme 'doom-solarized-dark t)
+  ;(load-theme 'doom-solarized-light t)
+  ;(load-theme 'doom-one t)
+  ;(load-theme 'doom-gruvbox t)
+  ;(load-theme 'doom-material t)
+  ;(load-theme 'doom-nord t)
+  ;(setq solarized-termcolors 256)
 
-;; ;; Solarized Config
-;; (setq solarized-use-variable-pitch nil)
+  ;; ;; Solarized Config
+   (setq solarized-use-variable-pitch nil)
 
-;;     (setq solarized-scale-org-headlines nil)
+       (setq solarized-scale-org-headlines nil)
 
-;;     (setq solarized-height-minus-1 1)
-;;     (setq solarized-height-plus-1 1)
-;;     (setq solarized-height-plus-2 1)
-;;     (setq solarized-height-plus-3 1)
-;;     (setq solarized-height-plus-4 1)
-;;     (setq x-underline-at-descent-line t)
-;; (load-theme 'solarized-dark t)
+       (setq solarized-height-minus-1 1)
+       (setq solarized-height-plus-1 1)
+       (setq solarized-height-plus-2 1)
+       (setq solarized-height-plus-3 1)
+       (setq solarized-height-plus-4 1)
+       (setq x-underline-at-descent-line t)
+       
+   (load-theme 'solarized-dark t)
 
 (setq-default header-line-format
-'(:eval (propertize (format-time-string " %d %b  %I:%M %p ")
+'(:eval (propertize (format-time-string " %d %b %I:%M %p ")
                                    'face 'font-lock-builtin-face))
 )
 
@@ -446,31 +467,35 @@
  ;             (format-mode-line "%m  %M" )))
  ; (add-hook 'org-mode-hook 'prose-setup)
 
-;  (use-package all-the-icons
- ; :ensure t)
-  (defvar doom-modeline-icon (display-graphic-p) )
-  (setq doom-modeline-enable-word-count t)
-  (setq doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
-  (setq doom-modeline-icon t) 
-  (doom-modeline-def-modeline 'prose-modeline
-  '(bar word-count buffer-info-simple)
-  '(major-mode battery))
+(doom-modeline-def-segment evil-state
+  "The current evil state.  Requires `evil-mode' to be enabled."
+  (when (bound-and-true-p evil-local-mode)
+    (s-trim-right (evil-state-property evil-state :tag t))))
 
-  (defun set-prose-modeline ()
-    (doom-modeline-set-modeline 'prose-modeline))
-  (add-hook 'org-mode-hook 'set-prose-modeline)
+(use-package all-the-icons
+:ensure t)
+(defvar doom-modeline-icon (display-graphic-p) )
+(setq doom-modeline-enable-word-count t)
+(setq doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
+(setq doom-modeline-icon t) 
+(doom-modeline-def-modeline 'prose-modeline
+'(bar word-count buffer-info-simple evil-state)
+'(major-mode battery))
+
+(defun set-prose-modeline ()
+  (doom-modeline-set-modeline 'prose-modeline))
+(add-hook 'org-mode-hook 'set-prose-modeline)
 
 (defvar doom-modeline-icon (display-graphic-p) )
 (setq doom-modeline-icon t)
 
 (doom-modeline-def-modeline 'prog-modeline
-'(bar buffer-info buffer-position)
+'(bar buffer-info buffer-position evil-state)
 '(major-mode battery checker))
 
 (defun set-prog-modeline ()
     (doom-modeline-set-modeline 'prog-modeline))
 (add-hook 'prog-mode-hook 'set-prog-modeline)
+(add-hook 'text-mode-hook 'set-prog-modeline)
 
-;(setq-default sml/no-confirm-load-theme t)
-;(sml/setup)
-;(sml/apply-theme 'respectful)
+(setq-default frame-title-format '("" user-login-name " - " "%b"))

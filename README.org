@@ -1,0 +1,2 @@
+* <2020-01-26 Sun> 
+As of the 26th of January, this repo is now deprecated. Instead, go to my [[https://github.com/jacobhilker1/editor-configs][editor config]] repository to get the most recent versions of my configs. If you want to fork this and use it as a starting point, feel free to, but this repository will be archived.

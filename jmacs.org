@@ -134,11 +134,14 @@ For toggling fill and unfill.
      (use-package restart-emacs
      :ensure t)
      #+END_SRC
-**** Slack
+**** CSV
+If I am using csv files I want a csv package.
 #+BEGIN_SRC emacs-lisp
-(use-package slack
+(use-package csv-mode
 :ensure t)
+(add-to-list 'auto-mode-alist '("\\.csv\\'" . csv-mode))
 #+END_SRC
+
 ** UI Packages
 *** Doom Themes
 Here is a package for Doom-Themes.
@@ -149,8 +152,6 @@ Here is a package for Doom-Themes.
 *** Solarized
 Here is a package for using solarized.
 #+BEGIN_SRC emacs-lisp
-(use-package color-theme-solarized
-:ensure t)
 (use-package solarized-theme
 :ensure t)
 #+END_SRC
@@ -262,7 +263,7 @@ functions with richer versions. Let’s install it!
   (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
 
     #+END_SRC
-*** Flycheck 
+*** Flush 
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
 :ensure t
@@ -301,6 +302,11 @@ Allows for a TOC to be generated in an org file.
   (org-agenda-list)))
 #+END_SRC
   
+*** Org Mediawiki
+    #+BEGIN_SRC emacs-lisp
+    (use-package ox-mediawiki
+    :ensure t)
+    #+END_SRC
 * Specific Functions
 ** Find Config File
 This file lets me edit my configuration file.
@@ -325,6 +331,14 @@ Here is a way I can use "y" or "n" to answer yes or no.
       (e (if mark-active end (point-max))))
     (message "%s words" (how-many "\\w+" b e))))
 #+END_SRC
+** Auto-Save Fix
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+#+END_SRC
 ** Right-Align Modebar
 #+BEGIN_SRC emacs-lisp
 (defun simple-mode-line-render (left right)
@@ -333,16 +347,21 @@ Here is a way I can use "y" or "n" to answer yes or no.
   (let* ((available-width (- (window-width) (length left) 2)))
     (format (format " %%s %%%ds " available-width) left right)))
 #+END_SRC
+** Right Align Headerbar
+#+BEGIN_SRC emacs-lisp
+(defun simple-header-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+#+END_SRC
 ** Resize Images
 #+BEGIN_SRC emacs-lisp
-(setq org-image-actual-width (/ (display-pixel-width) 3))
+(setq org-image-actual-width (/ (display-pixel-width) 4))
 #+END_SRC
-** Auto Save Fix
+** No Tabs, Only Spaces
 #+BEGIN_SRC emacs-lisp
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
+(setq-default indent-tabs-mode nil)
 #+END_SRC
 * Hooks and General (Non-UI) Config
 ** File Types and Modes
@@ -377,6 +396,7 @@ org-mode files.
 (add-hook 'org-mode-hook 'org-bullets-mode)
 (add-hook 'org-mode-hook 'org-super-agenda-mode)
 (add-hook 'org-mode-hook 'flyspell-mode)
+(add-hook 'org-mode-hook 'toc-org-mode)
 (setq-default org-list-allow-alphabetical t)
 #+END_SRC
 **** WC-Mode, Writer-Room Mode, and Decide Mode
@@ -393,19 +413,10 @@ Here I always want to use auto-complete mode, as well as in the current buffer.
 (setq-default yas-minor-mode 1)
 #+END_SRC
 
-**** Doom Modeline Mode
-I always want to use doom modeline.
-#+BEGIN_SRC emacs-lisp
- (setq-default doom-modeline-mode 1)
-#+END_SRC
-
-**** Rich Minority Mode
-I want to keep rich minority mode as a backup.
-#+BEGIN_SRC emacs-lisp 
-;(rich-minority-mode 1)
-;(ivy-rich-mode 1)
-#+END_SRC
-
+**** Doom Mode Line
+     #+BEGIN_SRC emacs-lisp
+     (setq-default doom-modeline-mode t)
+     #+END_SRC
 **** Display Battery Mode
 I want to display battery in the modeline.
 #+BEGIN_SRC emacs-lisp
@@ -419,6 +430,15 @@ I want to display battery in the modeline.
    #+BEGIN_SRC emacs-lisp
    (add-hook 'python-mode 'elpy-mode)
    (add-to-list 'auto-mode-alist '("\\.bbc\\'" . bbcode-mode)) 
+ #+END_SRC
+** Markdown and TOC-Org Mode
+** Use \LaTeX Snippets in Org Mode
+ #+BEGIN_SRC emacs-lisp
+ (defun org-latex-yas ()
+  "Activate org and LaTeX yas expansion in org-mode buffers."
+  (yas-activate-extra-mode 'latex-mode))
+
+(add-hook 'org-mode-hook #'org-latex-yas)
  #+END_SRC
 * Keybindings
 Here is a list of all keybindings in JMacs.
@@ -455,8 +475,8 @@ Here is a list of general purpose keybindings using General.el.
     "bw"  'wordCount
 ;; Window commands
    "w"  '(:ignore t :which-key "Windows")
-   "w-" 'split-window-right
-   "w|" 'split-window-below
+   "wh" 'split-window-right
+   "wv" 'split-window-below
    "wn" 'other-window
    "wd"  'delete-window
    "wD"  'delete-other-windows
@@ -501,6 +521,10 @@ Here is a list of general purpose keybindings using General.el.
    "oti" 'org-toggle-inline-images
    "otc" 'org-toggle-checkbox
    "oT" 'org-todo
+   "oi" '(:ignore t :which-key "insert")
+   "oit" 'toc-org-insert-toc
+   "oiT" 'org-time-stamp
+	 "oe" 'org-export-dispatch
    ;; Magit
    "g" '(:ignore t :which-key "Magit")
    "gs" 'magit-status
@@ -533,9 +557,11 @@ Here is a list of general purpose keybindings using General.el.
    "Md" 'decide-mode
    "My" 'yas-minor-mode 
    "MW" 'writegood-mode
-   "Mf" 'flyspell-mode
+   "Ms" 'flyspell-mode
    "MF" 'flycheck-mode
    "Mc" 'company-mode
+   "Md" 'decide-mode
+   "Mt" 'toc-org-mode
 ;; YaSnippet Shortcuts
 "y" '(:ignore t :which-key "Yasnippet")
 "yn" 'yas-new-snippet
@@ -546,11 +572,7 @@ Here is a list of general purpose keybindings using General.el.
 "s" '(:ignore t :which-key "Spell Check")
 "sn" 'flyspell-goto-next-error
 "sb" 'flyspell-buffer
-"sc" 'flyspell-correct-word-before-point  
-"st" 'ispell-minor-mode
-
-;; Slack
-"S" '(:ignore t :which-key "Slack")
+"sc" 'flyspell-correct-word-before-point
 
 ;; Lorem Ipsum
 "l" '(:ignore t :which-key "Lorem Ipsum")
@@ -597,16 +619,19 @@ my toolbars, tooltip-mode, menu-bar, and scroll-bar modes here.
 Here is where I disable the leading headers in org-bullets-mode.
 #+BEGIN_SRC emacs-lisp 
 (setq-default org-hide-leading-stars t)
-;(setq-default org-ellipsis "⤵")
+(setq-default org-ellipsis "⤵")
 (setq org-src-fontify-natively t)  
 (setq org-hide-emphasis-markers t)
-
-
 (font-lock-add-keywords 'org-mode
                         '(("^ +\\([-*]\\) "
                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+
 (setq-default org-bullets-bullet-list 
 '("⚫" "○")) 
+
+(setq-default tab-width 4)
+(setq-default org-list-indent-offset 4)
 #+END_SRC
 ** Fonts and Themes
 *** Fonts
@@ -618,7 +643,7 @@ switch between it by commenting out the other fonts.
 
 
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default t :font "Source Code Pro-12")
+(set-face-attribute 'default t :font "DejaVu Sans Mono-12")
 ; (setq solarized-use-variable-pitch nil)
 
  ;   (setq solarized-scale-org-headlines nil)
@@ -638,7 +663,7 @@ doom-material.
 
 #+BEGIN_SRC emacs-lisp
   ;(load-theme 'solarized t)
-  (load-theme 'doom-solarized-dark t)
+;  (load-theme 'doom-solarized-dark t)
   ;(load-theme 'doom-solarized-light t)
   ;(load-theme 'doom-one t)
   ;(load-theme 'doom-gruvbox t)
@@ -647,17 +672,18 @@ doom-material.
   ;(setq solarized-termcolors 256)
 
   ;; ;; Solarized Config
-  ;; (setq solarized-use-variable-pitch nil)
+   (setq solarized-use-variable-pitch nil)
 
-  ;;     (setq solarized-scale-org-headlines nil)
+       (setq solarized-scale-org-headlines nil)
 
-  ;;     (setq solarized-height-minus-1 1)
-  ;;     (setq solarized-height-plus-1 1)
-  ;;     (setq solarized-height-plus-2 1)
-  ;;     (setq solarized-height-plus-3 1)
-  ;;     (setq solarized-height-plus-4 1)
-  ;;     (setq x-underline-at-descent-line t)
-  ;; (load-theme 'solarized-dark t)
+       (setq solarized-height-minus-1 1)
+       (setq solarized-height-plus-1 1)
+       (setq solarized-height-plus-2 1)
+       (setq solarized-height-plus-3 1)
+       (setq solarized-height-plus-4 1)
+       (setq x-underline-at-descent-line t)
+       
+   (load-theme 'solarized-dark t)
 #+END_SRC 
 
 * Headerlines and Modelines
@@ -668,10 +694,10 @@ programming.
 ** Headerline
 #+BEGIN_SRC emacs-lisp
 (setq-default header-line-format
-'(:eval (propertize (format-time-string " %d %b  %I:%M %p ")
+'(:eval (propertize (format-time-string " %d %b %I:%M %p ")
                                    'face 'font-lock-builtin-face))
 )
-#+END_SRC
+#+END_SRC 
 ** Prose Stock Config
 #+BEGIN_SRC emacs-lisp
 ;(setq rm-blacklist
@@ -689,23 +715,30 @@ programming.
  ; (add-hook 'org-mode-hook 'prose-setup)
 #+END_SRC
 ** Doom Modeline Configs 
+*** Evil-State Section
+#+BEGIN_SRC emacs-lisp
+(doom-modeline-def-segment evil-state
+  "The current evil state.  Requires `evil-mode' to be enabled."
+  (when (bound-and-true-p evil-local-mode)
+    (s-trim-right (evil-state-property evil-state :tag t))))
+#+END_SRC
 *** Prose Configuration   
 Here is my prose configuration for doom modeline.
 #+BEGIN_SRC emacs-lisp
- ;  (use-package all-the-icons
-  ; :ensure t)
+   (use-package all-the-icons
+   :ensure t)
    (defvar doom-modeline-icon (display-graphic-p) )
    (setq doom-modeline-enable-word-count t)
    (setq doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode))
    (setq doom-modeline-icon t) 
    (doom-modeline-def-modeline 'prose-modeline
-   '(bar word-count buffer-info-simple)
+   '(bar word-count buffer-info-simple evil-state)
    '(major-mode battery))
 
    (defun set-prose-modeline ()
      (doom-modeline-set-modeline 'prose-modeline))
    (add-hook 'org-mode-hook 'set-prose-modeline)
-   #+END_SRC
+  #+END_SRC
 *** Programming Configuration
 Here is my programming configuration for doom modeline.
 #+BEGIN_SRC emacs-lisp
@@ -713,20 +746,19 @@ Here is my programming configuration for doom modeline.
 (setq doom-modeline-icon t)
 
 (doom-modeline-def-modeline 'prog-modeline
-'(bar buffer-info buffer-position)
+'(bar buffer-info buffer-position evil-state)
 '(major-mode battery checker))
 
 (defun set-prog-modeline ()
     (doom-modeline-set-modeline 'prog-modeline))
 (add-hook 'prog-mode-hook 'set-prog-modeline)
+(add-hook 'text-mode-hook 'set-prog-modeline)
 #+END_SRC
 
-** Prose Smart-Mode-Line Config
-
-  #+BEGIN_SRC emacs-lisp
-   ;(setq-default sml/no-confirm-load-theme t)
-   ;(sml/setup)
-   ;(sml/apply-theme 'respectful)
-  #+END_SRC
-  
-JMA
+** Smart Mode-Line Configs
+*** Prose Config
+*** Programming Config 
+* Title Format
+#+BEGIN_SRC emacs-lisp
+(setq-default frame-title-format '("" user-login-name " - " "%b"))
+#+END_SRC
